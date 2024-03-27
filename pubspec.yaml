@@ -45,7 +45,7 @@ dependencies:
 flutter_native_splash:
   android: true
   ios: true
-  color: "#FFFFFF"
+  color: "#ffffff"
   image: "images/currency-exchange.png"
 
 
