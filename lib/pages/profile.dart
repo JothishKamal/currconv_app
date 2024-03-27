@@ -84,7 +84,7 @@ class ProfilePage extends StatelessWidget {
           Container(
             margin: const EdgeInsets.only(left: 15),
             child: const Text(
-              'Date of Birth: 01-04-1969',
+              'Date of Birth: 04-20-1969',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w400,
