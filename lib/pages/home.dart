@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 
@@ -21,20 +22,33 @@ class _HomePageState extends State<HomePage> {
   }
 
   void fetchData() async {
-    var uri = Uri.parse(
-        'https://v6.exchangerate-api.com/v6/a7f0e525970e04f293e67f11/latest/USD');
-    var response = await http.get(uri);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? currenciesJson = prefs.getString('currencies');
 
-    if (response.statusCode == 200) {
-      Map<String, dynamic> data = jsonDecode(response.body);
-      Map<String, dynamic> conversionRates = data['conversion_rates'];
+    if (currenciesJson != null) {
+      List<String> cachedCurrencies =
+          List<String>.from(jsonDecode(currenciesJson));
       setState(() {
-        currencies = conversionRates.keys.toList();
+        currencies = cachedCurrencies;
         fromCurrency = currencies[0];
         toCurrency = currencies[1];
       });
     } else {
-      print('Failed to load data: ${response.statusCode}');
+      var uri = Uri.parse('https://v6.exchangerate-api.com/v6/a7f0e525970e04f293e67f11/latest/USD');
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> data = jsonDecode(response.body);
+        Map<String, dynamic> conversionRates = data['conversion_rates'];
+        setState(() {
+          currencies = conversionRates.keys.toList();
+          fromCurrency = currencies[0];
+          toCurrency = currencies[1];
+        });
+        prefs.setString('currencies', jsonEncode(currencies));
+      } else {
+        print('Failed to load data: ${response.statusCode}');
+      }
     }
   }
 
@@ -49,7 +63,7 @@ class _HomePageState extends State<HomePage> {
                 height: 50,
               ),
               Padding(
-                padding: const EdgeInsets.only(left: 15),
+                padding: const EdgeInsets.symmetric(horizontal: 50),
                 child: Row(
                   children: [
                     const Text(
@@ -87,7 +101,7 @@ class _HomePageState extends State<HomePage> {
                 height: 20,
               ),
               Padding(
-                padding: const EdgeInsets.only(left: 15),
+                padding: const EdgeInsets.symmetric(horizontal: 50),
                 child: Row(
                   children: [
                     const Text(
@@ -122,6 +136,22 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
+              const SizedBox(
+                height: 10,
+              ),
+              ElevatedButton(
+                  onPressed: () {},
+                  style: ButtonStyle(
+                      backgroundColor: MaterialStateColor.resolveWith(
+                          (states) => Colors.greenAccent)),
+                  child: const Text(
+                    'Convert',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ))
             ],
           ),
         ));
